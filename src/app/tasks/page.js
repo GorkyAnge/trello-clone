@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -53,11 +54,21 @@ export default function TasksPage() {
   const handleAddProject = (e) => {
     e.preventDefault();
     if (!projectForm.name.trim()) {
-      setProjectError("El nombre del proyecto es obligatorio.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "El nombre del proyecto es obligatorio.",
+      });
+      setProjectError("");
       return;
     }
     if (projects.some((p) => p.prefix === projectForm.prefix)) {
-      setProjectError("El prefijo sugerido ya existe, elige otro nombre.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "El prefijo sugerido ya existe, elige otro nombre.",
+      });
+      setProjectError("");
       return;
     }
     setProjects([
@@ -79,20 +90,33 @@ export default function TasksPage() {
       !form.description.trim() ||
       !selectedProject
     ) {
-      setError("Todos los campos son obligatorios, incluyendo el proyecto.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Todos los campos son obligatorios, incluyendo el proyecto.",
+      });
+      setError("");
       return;
     }
     if (
       specialCharRegex.test(form.title) ||
       specialCharRegex.test(form.description)
     ) {
-      setError(
-        "No se permiten caracteres especiales en el título o la descripción."
-      );
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se permiten caracteres especiales en el título o la descripción.",
+      });
+      setError("");
       return;
     }
     if (form.dueDate < today) {
-      setError("La fecha de vencimiento no puede ser anterior a hoy.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "La fecha de vencimiento no puede ser anterior a hoy.",
+      });
+      setError("");
       return;
     }
     // Generar ID de tarea tipo PREFIJO + número incremental con 3 dígitos
@@ -113,11 +137,26 @@ export default function TasksPage() {
     const task = tasks.find((t) => t.id === searchId);
     if (!task) {
       setFoundTask(null);
-      setError("No existe una tarea con ese ID.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No existe una tarea con ese ID.",
+      });
+      setError("");
       return;
     }
     setFoundTask(task);
     setError("");
+    Swal.fire({
+      icon: "info",
+      title: `Detalles de la tarea (${task.id})`,
+      html: `<b>Título:</b> ${task.title}<br/><b>Descripción:</b> ${
+        task.description
+      }<br/><b>Prioridad:</b> ${
+        task.priority
+      }<br/><b>Fecha de vencimiento:</b> ${formatDateDMY(task.dueDate)}`,
+      confirmButtonText: "Cerrar",
+    });
   };
 
   // Función para obtener tareas próximas a vencer (hoy, mañana, pasado mañana)
@@ -162,7 +201,7 @@ export default function TasksPage() {
           <button type="submit" className="trello-btn">
             Agregar proyecto
           </button>
-          {projectError && <div className="trello-error">{projectError}</div>}
+          {/* Eliminado mensaje de error aquí, ahora es SweetAlert */}
         </form>
         {/* Formulario de búsqueda ocupa todo el ancho */}
         <form
@@ -238,10 +277,10 @@ export default function TasksPage() {
               <button type="submit" className="trello-btn">
                 Agregar
               </button>
-              {error && <div className="trello-error">{error}</div>}
+              {/* Eliminado mensaje de error aquí, ahora es SweetAlert */}
             </form>
             {/* Mostrar detalles de la tarea encontrada solo aquí */}
-            {foundTask && (
+            {/* {foundTask && (
               <div className="trello-task-details">
                 <h3 className="trello-task-details-title">
                   Detalles de la tarea
@@ -262,7 +301,7 @@ export default function TasksPage() {
                   <b>Fecha de vencimiento:</b> {foundTask.dueDate}
                 </p>
               </div>
-            )}
+            )} */}
           </div>
           {/* Columna de tareas tipo Trello */}
           <div className="trello-tasks-col">
@@ -368,7 +407,7 @@ export default function TasksPage() {
                               {t.description}
                             </div>
                             <div className="trello-task-date">
-                              Vence: {t.dueDate}
+                              Vence: {formatDateDMY(t.dueDate)}
                             </div>
                             <div className="trello-task-id">ID: {t.id}</div>
                           </li>
@@ -383,52 +422,63 @@ export default function TasksPage() {
       {/* Módulo de tareas próximas a vencer a un lado */}
       {upcomingTasks.length > 0 && (
         <div className="trello-upcoming-side">
-          <div
-            className="trello-form"
-            style={{ background: "#fff8e1", border: "1px solid #ffe082" }}
+          <h2
+            className="trello-form-title"
+            style={{ color: "#b04632", marginBottom: 16 }}
           >
-            <h2 className="trello-form-title" style={{ color: "#b04632" }}>
-              Tareas próximas a vencer
-            </h2>
-            <ul className="trello-task-list">
-              {upcomingTasks.map((t) => {
-                const due = new Date(t.dueDate);
-                const todayDate = new Date(today);
-                const diff = Math.floor(
-                  (due - todayDate) / (1000 * 60 * 60 * 24)
-                );
-                return (
-                  <li
-                    key={t.id}
-                    className={`trello-task-card ${t.priority}`}
-                    style={{ position: "relative" }}
-                  >
-                    {diff === 0 && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
-                          color: "#b04632",
-                          fontWeight: "bold",
-                          fontSize: 22,
-                        }}
-                        title="¡Vence mañana!"
-                      >
-                        &#10071;
-                      </span>
-                    )}
-                    <div className="trello-task-title">{t.title}</div>
-                    <div className="trello-task-desc">{t.description}</div>
-                    <div className="trello-task-date">Vence: {t.dueDate}</div>
-                    <div className="trello-task-id">ID: {t.id}</div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+            Tareas próximas a vencer
+          </h2>
+          <ul className="trello-task-list">
+            {upcomingTasks.map((t) => {
+              const due = new Date(t.dueDate);
+              const todayDate = new Date(today);
+              const diff = Math.floor(
+                (due - todayDate) / (1000 * 60 * 60 * 24)
+              );
+              return (
+                <li
+                  key={t.id}
+                  className={`trello-task-card ${t.priority}`}
+                  style={{ position: "relative" }}
+                >
+                  {diff === 0 && (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        color: "#b04632",
+                        fontWeight: "bold",
+                        fontSize: 22,
+                      }}
+                      title="¡Vence mañana!"
+                    >
+                      &#10071;
+                    </span>
+                  )}
+                  <div className="trello-task-title">{t.title}</div>
+                  <div className="trello-task-desc">{t.description}</div>
+                  <div className="trello-task-date">
+                    Vence: {formatDateDMY(t.dueDate)}
+                  </div>
+                  <div className="trello-task-id">ID: {t.id}</div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>
   );
+}
+
+// Utilidad para formatear fecha a dd/mm/yyyy
+function formatDateDMY(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date)) return dateStr;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 }
