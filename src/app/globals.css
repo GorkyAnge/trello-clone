@@ -1,26 +1,186 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Estilos personalizados para la página de tareas estilo Trello */
+.trello-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 32px;
+  background: #f4f5f7;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px #0002;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.trello-title {
+  text-align: center;
+  color: #026aa7;
+  font-weight: 700;
+  font-size: 36px;
+  margin-bottom: 32px;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.trello-flex {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.trello-form-col {
+  flex: 1;
+  min-width: 320px;
+  max-width: 400px;
+}
+.trello-form {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.trello-form-title {
+  color: #5aac44;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.trello-input,
+.trello-textarea,
+.trello-select,
+.trello-date {
+  margin-bottom: 12px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #dfe1e6;
+}
+.trello-textarea {
+  min-height: 60px;
+}
+.trello-form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.trello-btn {
+  background: #5aac44;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+.trello-error {
+  color: #b04632;
+  margin-top: 12px;
+  font-weight: 500;
+}
+.trello-search-form {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 24px;
+}
+.trello-search-title {
+  color: #0079bf;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.trello-search-row {
+  display: flex;
+  gap: 8px;
+}
+.trello-search-btn {
+  background: #0079bf;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.trello-task-details {
+  background: #e4f0f6;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 24px;
+  box-shadow: 0 1px 4px #0001;
+}
+.trello-task-details-title {
+  color: #026aa7;
+  font-weight: 600;
+}
+.trello-tasks-col {
+  flex: 2;
+  min-width: 320px;
+}
+.trello-tasks-title {
+  color: #172b4d;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.trello-tasks-flex {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.trello-priority-col {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 16px;
+  min-width: 220px;
+  flex: 1;
+}
+.trello-priority-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: capitalize;
+}
+.trello-priority-title.alta {
+  color: #b04632;
+}
+.trello-priority-title.media {
+  color: #ffab00;
+}
+.trello-priority-title.baja {
+  color: #5aac44;
+}
+.trello-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.trello-task-list-empty {
+  color: #b6bbbf;
+  font-style: italic;
+}
+.trello-task-card {
+  background: #f4f5f7;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 4px #0001;
+  border-left: 6px solid #5aac44;
+}
+.trello-task-card.alta {
+  border-left-color: #b04632;
+}
+.trello-task-card.media {
+  border-left-color: #ffab00;
+}
+.trello-task-card.baja {
+  border-left-color: #5aac44;
+}
+.trello-task-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #172b4d;
+}
+.trello-task-desc {
+  font-size: 13px;
+  color: #5e6c84;
+  margin: 4px 0 6px 0;
+}
+.trello-task-date {
+  font-size: 12px;
+  color: #6b778c;
 }
