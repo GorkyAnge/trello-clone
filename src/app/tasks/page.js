@@ -164,8 +164,27 @@ export default function TasksPage() {
           </button>
           {projectError && <div className="trello-error">{projectError}</div>}
         </form>
+        {/* Formulario de búsqueda ocupa todo el ancho */}
+        <form
+          onSubmit={handleSearch}
+          className="trello-search-form"
+          style={{ marginBottom: 24 }}
+        >
+          <h2 className="trello-search-title">Buscar tarea por ID</h2>
+          <div className="trello-search-row">
+            <input
+              placeholder="ID de la tarea"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              className="trello-input"
+            />
+            <button type="submit" className="trello-search-btn">
+              Buscar
+            </button>
+          </div>
+        </form>
         <div className="trello-flex">
-          {/* Columna de creación y búsqueda */}
+          {/* Columna de creación */}
           <div className="trello-form-col">
             <form onSubmit={handleAddTask} className="trello-form">
               <h2 className="trello-form-title">Crear tarea</h2>
@@ -221,22 +240,7 @@ export default function TasksPage() {
               </button>
               {error && <div className="trello-error">{error}</div>}
             </form>
-
-            <form onSubmit={handleSearch} className="trello-search-form">
-              <h2 className="trello-search-title">Buscar tarea por ID</h2>
-              <div className="trello-search-row">
-                <input
-                  placeholder="ID de la tarea"
-                  value={searchId}
-                  onChange={(e) => setSearchId(e.target.value)}
-                  className="trello-input"
-                />
-                <button type="submit" className="trello-search-btn">
-                  Buscar
-                </button>
-              </div>
-            </form>
-
+            {/* Mostrar detalles de la tarea encontrada solo aquí */}
             {foundTask && (
               <div className="trello-task-details">
                 <h3 className="trello-task-details-title">
