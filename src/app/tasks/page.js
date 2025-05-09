@@ -120,6 +120,20 @@ export default function TasksPage() {
     setError("");
   };
 
+  // Función para obtener tareas próximas a vencer (hoy, mañana, pasado mañana)
+  const getUpcomingTasks = () => {
+    const todayDate = new Date(today);
+    return tasks
+      .filter((t) => {
+        const due = new Date(t.dueDate);
+        const diff = Math.floor((due - todayDate) / (1000 * 60 * 60 * 24));
+        return diff >= 0 && diff <= 2;
+      })
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  };
+
+  const upcomingTasks = getUpcomingTasks();
+
   return (
     <div className="trello-container">
       <h1 className="trello-title">Gestor de Tareas Tralalero</h1>
@@ -149,6 +163,56 @@ export default function TasksPage() {
         </button>
         {projectError && <div className="trello-error">{projectError}</div>}
       </form>
+
+      {/* Módulo de tareas próximas a vencer solo si hay tareas */}
+      {upcomingTasks.length > 0 && (
+        <div className="trello-form-col" style={{ marginBottom: 24 }}>
+          <div
+            className="trello-form"
+            style={{ background: "#fff8e1", border: "1px solid #ffe082" }}
+          >
+            <h2 className="trello-form-title" style={{ color: "#b04632" }}>
+              Tareas próximas a vencer
+            </h2>
+            <ul className="trello-task-list">
+              {upcomingTasks.map((t) => {
+                const due = new Date(t.dueDate);
+                const todayDate = new Date(today);
+                const diff = Math.floor(
+                  (due - todayDate) / (1000 * 60 * 60 * 24)
+                );
+                return (
+                  <li
+                    key={t.id}
+                    className={`trello-task-card ${t.priority}`}
+                    style={{ position: "relative" }}
+                  >
+                    {diff === 0 && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          color: "#b04632",
+                          fontWeight: "bold",
+                          fontSize: 22,
+                        }}
+                        title="¡Vence mañana!"
+                      >
+                        &#10071;
+                      </span>
+                    )}
+                    <div className="trello-task-title">{t.title}</div>
+                    <div className="trello-task-desc">{t.description}</div>
+                    <div className="trello-task-date">Vence: {t.dueDate}</div>
+                    <div className="trello-task-id">ID: {t.id}</div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
 
       <div className="trello-flex">
         {/* Columna de creación y búsqueda */}
