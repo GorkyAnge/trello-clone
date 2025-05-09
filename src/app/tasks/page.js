@@ -14,23 +14,72 @@ export default function TasksPage() {
   const [error, setError] = useState("");
   const [nextId, setNextId] = useState(1);
 
+  // Estado para proyectos
+  const [projects, setProjects] = useState([]);
+  const [projectForm, setProjectForm] = useState({ name: "", prefix: "" });
+  const [projectError, setProjectError] = useState("");
+  const [selectedProject, setSelectedProject] = useState("");
+  const [projectTaskCounters, setProjectTaskCounters] = useState({});
+
+  // Estado para filtro de prioridad
+  const [priorityFilter, setPriorityFilter] = useState("");
+
   const today = new Date().toISOString().split("T")[0];
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Genera un prefijo sugerido a partir del nombre
+  const suggestPrefix = (name) => {
+    if (!name) return "";
+    const words = name.trim().split(/\s+/);
+    let prefix = words.map((w) => w[0].toUpperCase()).join("");
+    let originalPrefix = prefix;
+    let i = 1;
+    // Asegura que el prefijo no se repita
+    while (projects.some((p) => p.prefix === prefix)) {
+      prefix = originalPrefix + i;
+      i++;
+    }
+    return prefix;
+  };
+
+  const handleProjectNameChange = (e) => {
+    const name = e.target.value;
+    setProjectForm({ name, prefix: suggestPrefix(name) });
+  };
+
+  const handleAddProject = (e) => {
+    e.preventDefault();
+    if (!projectForm.name.trim()) {
+      setProjectError("El nombre del proyecto es obligatorio.");
+      return;
+    }
+    if (projects.some((p) => p.prefix === projectForm.prefix)) {
+      setProjectError("El prefijo sugerido ya existe, elige otro nombre.");
+      return;
+    }
+    setProjects([
+      ...projects,
+      { name: projectForm.name.trim(), prefix: projectForm.prefix },
+    ]);
+    setProjectForm({ name: "", prefix: "" });
+    setProjectError("");
+  };
+
+  // Modificar handleAddTask para usar el proyecto seleccionado y generar el ID correcto
   const handleAddTask = (e) => {
     e.preventDefault();
-    // Validar campos vacíos o nulos y caracteres especiales
     const specialCharRegex = /[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/;
     if (
       !form.title.trim() ||
       !form.dueDate.trim() ||
       !form.priority.trim() ||
-      !form.description.trim()
+      !form.description.trim() ||
+      !selectedProject
     ) {
-      setError("Todos los campos son obligatorios.");
+      setError("Todos los campos son obligatorios, incluyendo el proyecto.");
       return;
     }
     if (
@@ -46,10 +95,16 @@ export default function TasksPage() {
       setError("La fecha de vencimiento no puede ser anterior a hoy.");
       return;
     }
-    const newTask = { ...form, id: nextId.toString() };
-    setTasks([...tasks, newTask]);
+    // Generar ID de tarea tipo PREFIJO + número incremental con 3 dígitos
+    const prefix = projects.find((p) => p.name === selectedProject)?.prefix;
+    const nextTaskNum = projectTaskCounters[prefix] || 1;
+    const taskId = `${prefix}${nextTaskNum.toString().padStart(3, "0")}`;
+    setTasks([...tasks, { ...form, id: taskId, project: selectedProject }]);
     setForm({ title: "", description: "", priority: "media", dueDate: "" });
-    setNextId(nextId + 1);
+    setProjectTaskCounters({
+      ...projectTaskCounters,
+      [prefix]: nextTaskNum + 1,
+    });
     setError("");
   };
 
@@ -68,6 +123,33 @@ export default function TasksPage() {
   return (
     <div className="trello-container">
       <h1 className="trello-title">Gestor de Tareas Tralalero</h1>
+      {/* Formulario de creación de proyecto al inicio */}
+      <form
+        onSubmit={handleAddProject}
+        className="trello-form"
+        style={{ marginBottom: 24 }}
+      >
+        <h2 className="trello-form-title">Crear proyecto</h2>
+        <input
+          name="projectName"
+          placeholder="Nombre del proyecto"
+          value={projectForm.name}
+          onChange={handleProjectNameChange}
+          className="trello-input"
+        />
+        <input
+          name="projectPrefix"
+          placeholder="Prefijo sugerido"
+          value={projectForm.prefix}
+          readOnly
+          className="trello-input"
+        />
+        <button type="submit" className="trello-btn">
+          Agregar proyecto
+        </button>
+        {projectError && <div className="trello-error">{projectError}</div>}
+      </form>
+
       <div className="trello-flex">
         {/* Columna de creación y búsqueda */}
         <div className="trello-form-col">
@@ -107,6 +189,19 @@ export default function TasksPage() {
                 min={today}
               />
             </div>
+            <select
+              name="project"
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              className="trello-select"
+            >
+              <option value="">Selecciona un proyecto</option>
+              {projects.map((p) => (
+                <option key={p.prefix} value={p.name}>
+                  {p.name} ({p.prefix})
+                </option>
+              ))}
+            </select>
             <button type="submit" className="trello-btn">
               Agregar
             </button>
@@ -155,29 +250,95 @@ export default function TasksPage() {
         {/* Columna de tareas tipo Trello */}
         <div className="trello-tasks-col">
           <h2 className="trello-tasks-title">Todas las tareas</h2>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              marginBottom: 24,
+            }}
+          >
+            <button
+              type="button"
+              className="trello-btn"
+              style={{
+                background: priorityFilter === "" ? "#0079bf" : "#5aac44",
+              }}
+              onClick={() => setPriorityFilter("")}
+            >
+              Todas
+            </button>
+            <button
+              type="button"
+              className="trello-btn"
+              style={{
+                background: priorityFilter === "alta" ? "#b04632" : "#5aac44",
+              }}
+              onClick={() => setPriorityFilter("alta")}
+            >
+              Alta
+            </button>
+            <button
+              type="button"
+              className="trello-btn"
+              style={{
+                background: priorityFilter === "media" ? "#ffab00" : "#5aac44",
+                color: priorityFilter === "media" ? "#333" : "#fff",
+              }}
+              onClick={() => setPriorityFilter("media")}
+            >
+              Media
+            </button>
+            <button
+              type="button"
+              className="trello-btn"
+              style={{
+                background: priorityFilter === "baja" ? "#5aac44" : "#5aac44",
+              }}
+              onClick={() => setPriorityFilter("baja")}
+            >
+              Baja
+            </button>
+          </div>
           <div className="trello-tasks-flex">
-            {["alta", "media", "baja"].map((priority) => (
-              <div key={priority} className="trello-priority-col">
-                <h3 className={`trello-priority-title ${priority}`}>
-                  Prioridad {priority}
-                </h3>
-                <ul className="trello-task-list">
-                  {tasks.filter((t) => t.priority === priority).length ===
-                    0 && <li className="trello-task-list-empty">Sin tareas</li>}
-                  {tasks
-                    .filter((t) => t.priority === priority)
-                    .map((t) => (
-                      <li key={t.id} className={`trello-task-card ${priority}`}>
-                        <div className="trello-task-title">{t.title}</div>
-                        <div className="trello-task-desc">{t.description}</div>
-                        <div className="trello-task-date">
-                          Vence: {t.dueDate}
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            ))}
+            {["alta", "media", "baja"]
+              .filter(
+                (priority) => !priorityFilter || priority === priorityFilter
+              )
+              .map((priority) => (
+                <div key={priority} className="trello-priority-col">
+                  <h3 className={`trello-priority-title ${priority}`}>
+                    Prioridad {priority}
+                  </h3>
+                  <ul className="trello-task-list">
+                    {tasks.filter((t) => t.priority === priority).length ===
+                      0 && (
+                      <li className="trello-task-list-empty">Sin tareas</li>
+                    )}
+                    {tasks
+                      .filter((t) => t.priority === priority)
+                      .sort((a, b) =>
+                        a.title.localeCompare(b.title, "es", {
+                          sensitivity: "base",
+                        })
+                      )
+                      .map((t) => (
+                        <li
+                          key={t.id}
+                          className={`trello-task-card ${priority}`}
+                        >
+                          <div className="trello-task-title">{t.title}</div>
+                          <div className="trello-task-desc">
+                            {t.description}
+                          </div>
+                          <div className="trello-task-date">
+                            Vence: {t.dueDate}
+                          </div>
+                          <div className="trello-task-id">ID: {t.id}</div>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              ))}
           </div>
         </div>
       </div>
